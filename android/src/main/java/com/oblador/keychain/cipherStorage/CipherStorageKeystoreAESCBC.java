@@ -230,6 +230,26 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
         }
     }
 
+    private static byte[] maybeRemovePKCS7Padding(byte[] paddedBytes, int maxPaddingLength) {
+        int paddingLength = paddedBytes[paddedBytes.length - 1];
+
+        // Validate the padding
+        if (paddingLength < 1 || paddingLength > paddedBytes.length || paddingLength > maxPaddingLength) {
+            return paddedBytes;
+        }
+        for (int i = paddedBytes.length - paddingLength; i < paddedBytes.length; i++) {
+            if (paddedBytes[i] != paddingLength) {
+            return paddedBytes;
+            }
+        }
+
+        // Remove the padding
+        byte[] unpaddedBytes = new byte[paddedBytes.length - paddingLength];
+        System.arraycopy(paddedBytes, 0, unpaddedBytes, 0, unpaddedBytes.length);
+
+        return unpaddedBytes;
+    }
+
     private String decryptBytes(Key key, byte[] bytes) throws CryptoFailedException {
         try {
             int ivLength = 16;
@@ -238,7 +258,16 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
             IvParameterSpec ivParams = new IvParameterSpec(bytes, 0, ivLength);
             cipher.init(Cipher.DECRYPT_MODE, key, ivParams);
 
-            byte[] decryptedBytes = cipher.doFinal(bytes, ivLength, bytes.length - ivLength);
+            // decrypt the bytes using cipher.doFinal(). Using a CipherInputStream for
+            // decryption has historically led to issues
+            // on the Pixel family of devices.
+            // see https://github.com/oblador/react-native-keychain/issues/383
+            byte[] _decryptedBytes = cipher.doFinal(bytes, ivLength, bytes.length - ivLength);
+
+            // removing padding is required to work around a decryption padding issue with
+            // some Pixel devices e.g. for strings of length 256
+            byte[] decryptedBytes = maybeRemovePKCS7Padding(_decryptedBytes, ivLength);
+
             return new String(decryptedBytes, Charset.forName("UTF-8"));
         } catch (Exception e) {
             throw new CryptoFailedException("Could not decrypt bytes: " + e.getMessage(), e);
