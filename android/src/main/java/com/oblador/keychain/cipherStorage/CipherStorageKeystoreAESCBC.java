@@ -42,13 +42,11 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
     public static final String ENCRYPTION_ALGORITHM = KeyProperties.KEY_ALGORITHM_AES;
     public static final String ENCRYPTION_BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC;
     public static final String ENCRYPTION_PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7;
-    public static final String ENCRYPTION_TRANSFORMATION =
-            ENCRYPTION_ALGORITHM + "/" +
-                    ENCRYPTION_BLOCK_MODE + "/" +
-                    ENCRYPTION_PADDING;
+    public static final String ENCRYPTION_TRANSFORMATION = ENCRYPTION_ALGORITHM + "/" +
+            ENCRYPTION_BLOCK_MODE + "/" +
+            ENCRYPTION_PADDING;
     public static final int ENCRYPTION_KEY_SIZE = 256;
     private boolean retry = true;
-
 
     @Override
     public String getCipherStorageName() {
@@ -86,7 +84,8 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
-    public EncryptionResult encrypt(@NonNull String service, @NonNull String username, @NonNull String password, SecurityLevel level) throws CryptoFailedException {
+    public EncryptionResult encrypt(@NonNull String service, @NonNull String username, @NonNull String password,
+            SecurityLevel level) throws CryptoFailedException {
         service = getDefaultServiceIfEmpty(service);
 
         try {
@@ -102,7 +101,8 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
             } catch (UnrecoverableKeyException ex) {
                 ex.printStackTrace();
                 // Fix for android.security.KeyStoreException: Invalid key blob
-                // more info: https://stackoverflow.com/questions/36488219/android-security-keystoreexception-invalid-key-blob/36846085#36846085
+                // more info:
+                // https://stackoverflow.com/questions/36488219/android-security-keystoreexception-invalid-key-blob/36846085#36846085
                 if (retry) {
                     retry = false;
                     keyStore.deleteEntry(service);
@@ -117,7 +117,8 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
 
             retry = true;
             return new EncryptionResult(encryptedUsername, encryptedPassword, this);
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | NoSuchProviderException | UnrecoverableKeyException e) {
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | NoSuchProviderException
+                | UnrecoverableKeyException e) {
             throw new CryptoFailedException("Could not encrypt data for service " + service, e);
         } catch (KeyStoreException | KeyStoreAccessException e) {
             throw new CryptoFailedException("Could not access Keystore for service " + service, e);
@@ -143,9 +144,12 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
         }
     }
 
-    private void generateKeyAndStoreUnderAlias(@NonNull String service, SecurityLevel requiredLevel) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CryptoFailedException {
+    private void generateKeyAndStoreUnderAlias(@NonNull String service, SecurityLevel requiredLevel)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
+            CryptoFailedException {
         // Firstly, try to generate the key as safe as possible (strongbox).
-        // see https://developer.android.com/training/articles/keystore#HardwareSecurityModule
+        // see
+        // https://developer.android.com/training/articles/keystore#HardwareSecurityModule
         SecretKey secretKey = tryGenerateStrongBoxSecurityKey(service);
         if (secretKey == null) {
             // If that is not possible, we generate the key in a regular way
@@ -165,7 +169,8 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
     }
 
     @Override
-    public DecryptionResult decrypt(@NonNull String service, @NonNull byte[] username, @NonNull byte[] password) throws CryptoFailedException {
+    public DecryptionResult decrypt(@NonNull String service, @NonNull byte[] username, @NonNull byte[] password)
+            throws CryptoFailedException {
         service = getDefaultServiceIfEmpty(service);
 
         try {
@@ -173,7 +178,7 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
 
             Key key = keyStore.getKey(service, null);
             if (key == null) {
-              throw new CryptoFailedException("The provided service/key could not be found in the Keystore");
+                throw new CryptoFailedException("The provided service/key could not be found in the Keystore");
             }
 
             String decryptedUsername = decryptBytes(key, username);
@@ -220,7 +225,8 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
             cipherOutputStream.close();
             return outputStream.toByteArray();
         } catch (Exception e) {
-            throw new CryptoFailedException("Could not encrypt value for service " + service + ", message: " + e.getMessage(), e);
+            throw new CryptoFailedException(
+                    "Could not encrypt value for service " + service + ", message: " + e.getMessage(), e);
         }
     }
 
@@ -256,7 +262,7 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
 
     @TargetApi(Build.VERSION_CODES.P)
     private SecretKey tryGenerateStrongBoxSecurityKey(String service) throws NoSuchAlgorithmException,
-      InvalidAlgorithmParameterException, NoSuchProviderException {
+            InvalidAlgorithmParameterException, NoSuchProviderException {
         // StrongBox is only supported on Android P and higher
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             return null;
@@ -264,25 +270,25 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
         try {
             return generateKey(getKeyGenSpecBuilder(service).setIsStrongBoxBacked(true).build());
         } catch (Exception e) {
-          if (e instanceof StrongBoxUnavailableException) {
-            Log.i(TAG, "StrongBox is unavailable on this device");
-          } else {
-            Log.e(TAG, "An error occurred when trying to generate a StrongBoxSecurityKey: " + e.getMessage());
-          }
-          return null;
+            if (e instanceof StrongBoxUnavailableException) {
+                Log.i(TAG, "StrongBox is unavailable on this device");
+            } else {
+                Log.e(TAG, "An error occurred when trying to generate a StrongBoxSecurityKey: " + e.getMessage());
+            }
+            return null;
         }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     private SecretKey tryGenerateRegularSecurityKey(String service) throws NoSuchAlgorithmException,
-      InvalidAlgorithmParameterException, NoSuchProviderException {
+            InvalidAlgorithmParameterException, NoSuchProviderException {
         return generateKey(getKeyGenSpecBuilder(service).build());
     }
 
     // returns true if the key was generated successfully
     @TargetApi(Build.VERSION_CODES.M)
     private SecretKey generateKey(KeyGenParameterSpec spec) throws NoSuchProviderException,
-      NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         KeyGenerator generator = KeyGenerator.getInstance(ENCRYPTION_ALGORITHM, KEYSTORE_TYPE);
         generator.init(spec);
         return generator.generateKey();
@@ -293,10 +299,12 @@ public class CipherStorageKeystoreAESCBC implements CipherStorage {
         return new KeyGenParameterSpec.Builder(
                 service,
                 KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)
-            .setBlockModes(ENCRYPTION_BLOCK_MODE)
-            .setEncryptionPaddings(ENCRYPTION_PADDING)
-            .setRandomizedEncryptionRequired(true)
-            //.setUserAuthenticationRequired(true) // Will throw InvalidAlgorithmParameterException if there is no fingerprint enrolled on the device
-            .setKeySize(ENCRYPTION_KEY_SIZE);
+                .setBlockModes(ENCRYPTION_BLOCK_MODE)
+                .setEncryptionPaddings(ENCRYPTION_PADDING)
+                .setRandomizedEncryptionRequired(true)
+                // .setUserAuthenticationRequired(true) // Will throw
+                // InvalidAlgorithmParameterException if there is no fingerprint enrolled on the
+                // device
+                .setKeySize(ENCRYPTION_KEY_SIZE);
     }
 }
