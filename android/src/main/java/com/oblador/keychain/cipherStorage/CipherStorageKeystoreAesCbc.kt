@@ -221,7 +221,12 @@ class CipherStorageKeystoreAesCbc(reactContext: ReactApplicationContext) :
             cipher.init(Cipher.DECRYPT_MODE, key, spec)
 
             // Decrypt the bytes using cipher.doFinal()
-            val decryptedBytes = cipher.doFinal(bytes, IV.IV_LENGTH, bytes.size - IV.IV_LENGTH)
+            // Using a CipherInputStream for decryption has historically led to issues on the Pixel family of devices
+            // see https://github.com/oblador/react-native-keychain/issues/383
+            val _decryptedBytes = cipher.doFinal(bytes, IV.IV_LENGTH, bytes.size - IV.IV_LENGTH)
+
+            val decryptedBytes = maybeRemovePKCS7Padding(_decryptedBytes, IV.IV_LENGTH)
+
             String(decryptedBytes, UTF8)
         } catch (fail: Throwable) {
             Log.w(LOG_TAG, fail.message, fail)
@@ -270,4 +275,22 @@ class CipherStorageKeystoreAesCbc(reactContext: ReactApplicationContext) :
         decryptBytes(key, bytes, IV.decrypt)
 
     // endregion
+
+    private fun maybeRemovePKCS7Padding(paddedBytes: ByteArray, maxPaddingLength: Int): ByteArray {
+      val paddingLength = paddedBytes.last().toInt()
+
+      // Validate the padding
+      if (paddingLength < 1 || paddingLength > paddedBytes.size || paddingLength > maxPaddingLength) {
+          return paddedBytes
+      }
+
+      for (i in paddedBytes.size - paddingLength until paddedBytes.size) {
+        if (paddedBytes[i] != paddingLength.toByte()) {
+          return paddedBytes
+        }
+      }
+
+      // Remove the padding
+      return paddedBytes.copyOfRange(0, paddedBytes.size - paddingLength)
+    }
 }
