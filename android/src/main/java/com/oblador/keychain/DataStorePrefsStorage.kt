@@ -45,12 +45,7 @@ class DataStorePrefsStorage(
     var cipherStorageName = getCipherStorageName(service)
 
     // in case of wrong password or username
-    if (bytesForUsername == null || bytesForPassword == null) return null
-    if (cipherStorageName == null) {
-      // If the CipherStorage name is not found, we assume it is because the entry was written by an
-      // older version of this library which used Facebook Conceal, so we default to that.
-      cipherStorageName = KnownCiphers.FB
-    }
+    if (bytesForUsername == null || bytesForPassword == null || cipherStorageName == null) return null
     return ResultSet(cipherStorageName, bytesForUsername, bytesForPassword)
   }
 
