@@ -100,7 +100,7 @@ class KeychainModule(reactContext: ReactApplicationContext) :
   }
 
   /** Supported ciphers. */
-  @StringDef(KnownCiphers.FB, KnownCiphers.AES_CBC, KnownCiphers.AES_GCM, KnownCiphers.RSA)
+  @StringDef(KnownCiphers.AES_CBC, KnownCiphers.AES_GCM, KnownCiphers.RSA)
   annotation class KnownCiphers {
     companion object {
       /** AES CBC encryption. */
@@ -278,17 +278,7 @@ class KeychainModule(reactContext: ReactApplicationContext) :
         val promptInfo = getPromptInfo(options)
         var cipher: CipherStorage? = null
 
-        // Only check for upgradable ciphers for FacebookConseal as that
-        // is the only cipher that can be upgraded
-        cipher =
-          if (rules == Rules.AUTOMATIC_UPGRADE && storageName == KnownCiphers.FB) {
-            // get the best storage
-            val accessControl = getAccessControlOrDefault(options)
-            val useBiometry = getUseBiometry(accessControl)
-            getCipherStorageForCurrentAPILevel(useBiometry)
-          } else {
-            getCipherStorageByName(storageName)
-          }
+        cipher = getCipherStorageByName(storageName)
         val decryptionResult = mutex.withLock { decryptCredentials(alias, cipher!!, resultSet, rules, promptInfo) }
         val credentials = Arguments.createMap()
         credentials.putString(Maps.SERVICE, alias)
