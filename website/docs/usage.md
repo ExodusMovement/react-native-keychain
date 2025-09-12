@@ -46,7 +46,6 @@ See the `KeychainExample` for a fully working project example.
 
 The module automatically selects the appropriate `CipherStorage` implementation based on the device's API level:
 
-- **API levels 16-22**: Uses Facebook Conceal for encryption/decryption.
 - **API level 23+**: Uses Android Keystore for encryption/decryption.
 
 Encrypted data is stored in `Jetpack DataStore`.

@@ -109,17 +109,9 @@ export enum BIOMETRY_TYPE {
  * 2. Medium Security (No Authentication):
  * - AES_GCM_NO_AUTH: For app-level secrets and cached data
  *
- * 3. Legacy/Deprecated:
- * - AES_CBC: Outdated, use AES_GCM_NO_AUTH instead
- * - FB: Archived Facebook Conceal implementation
- *
  * @platform Android
  */
 export enum STORAGE_TYPE {
-  /** Facebook compatibility cipher.
-   * @deprecated Facebook Conceal was deprecated and archived in Mar 3, 2020. https://github.com/facebookarchive/conceal
-   */
-  FB = 'FacebookConceal',
   /** Encryptions without human interaction.
    * @deprecated Use AES_GCM_NO_AUTH instead.
    */

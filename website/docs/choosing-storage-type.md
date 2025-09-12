@@ -20,11 +20,6 @@ We offer three security levels for data storage:
 - **AES_GCM_NO_AUTH**: Symmetric encryption without biometric requirements
 - Best for: Cached data, non-sensitive encrypted data
 
-### 3. Legacy/Deprecated
-
-- **AES_CBC**, **FB** (Facebook Conceal)
-- ⚠️ Not recommended for new implementations
-
 ## Storage Type Selection Guide
 
 ### Use AES_GCM (High Security) for:
