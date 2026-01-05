@@ -34,6 +34,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
     public static final String E_SUPPORTED_BIOMETRY_ERROR = "E_SUPPORTED_BIOMETRY_ERROR";
     public static final String KEYCHAIN_MODULE = "RNKeychainManager";
     public static final String FINGERPRINT_SUPPORTED_NAME = "Fingerprint";
+    public static final String AUTHENTICATION_TYPE_BIOMETRICS = "AuthenticationWithBiometrics";
     public static final String EMPTY_STRING = "";
 
     private final Map<String, CipherStorage> cipherStorageMap = new HashMap<>();
@@ -223,6 +224,23 @@ public class KeychainModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             Log.e(KEYCHAIN_MODULE, e.getMessage());
             promise.reject(E_SUPPORTED_BIOMETRY_ERROR, e);
+        }
+    }
+
+    @ReactMethod
+    public void canCheckAuthentication(ReadableMap options, Promise promise) {
+        try {
+            String authenticationType = options != null ? options.getString("authenticationType") : null;
+            boolean biometricsOnly = AUTHENTICATION_TYPE_BIOMETRICS.equals(authenticationType);
+
+            if (biometricsOnly) {
+                promise.resolve(isFingerprintAuthAvailable());
+            } else {
+                promise.resolve(DeviceAvailability.isDeviceSecure(getReactApplicationContext()));
+            }
+        } catch (Exception e) {
+            Log.e(KEYCHAIN_MODULE, e.getMessage());
+            promise.resolve(false);
         }
     }
 

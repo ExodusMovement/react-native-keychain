@@ -73,13 +73,10 @@ export function getSecurityLevel(): Promise<?($Values<typeof SECURITY_LEVEL>)> {
 /**
  * Inquire if the type of local authentication policy (LAPolicy) is supported
  * on this device with the device settings the user chose.
- * @param {object} options LAPolicy option, iOS only
+ * @param {object} options LAPolicy option
  * @return {Promise} Resolves to `true` when supported, otherwise `false`
  */
 export function canImplyAuthentication(options?: Options): Promise<boolean> {
-  if (!RNKeychainManager.canCheckAuthentication) {
-    return Promise.resolve(false);
-  }
   return RNKeychainManager.canCheckAuthentication(options);
 }
 
