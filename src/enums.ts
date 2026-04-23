@@ -63,7 +63,7 @@ export enum SECURITY_LEVEL {
    * */
   SECURE_HARDWARE = RNKeychainManager &&
     RNKeychainManager.SECURITY_LEVEL_SECURE_HARDWARE,
-  /** No security guarantees needed (default value). Credentials can be stored in FB Secure Storage. */
+  /** No security guarantees needed (default value). */
   ANY = RNKeychainManager && RNKeychainManager.SECURITY_LEVEL_ANY,
 }
 
@@ -109,17 +109,9 @@ export enum BIOMETRY_TYPE {
  * 2. Medium Security (No Authentication):
  * - AES_GCM_NO_AUTH: For app-level secrets and cached data
  *
- * 3. Legacy/Deprecated:
- * - AES_CBC: Outdated, use AES_GCM_NO_AUTH instead
- * - FB: Archived Facebook Conceal implementation
- *
  * @platform Android
  */
 export enum STORAGE_TYPE {
-  /** Facebook compatibility cipher.
-   * @deprecated Facebook Conceal was deprecated and archived in Mar 3, 2020. https://github.com/facebookarchive/conceal
-   */
-  FB = 'FacebookConceal',
   /** Encryptions without human interaction.
    * @deprecated Use AES_GCM_NO_AUTH instead.
    */
@@ -154,6 +146,6 @@ export enum STORAGE_TYPE {
 export enum SECURITY_RULES {
   /** No special security rules applied. */
   NONE = 'none',
-  /** Upgrade secret to the best available storage as soon as it is available and user request secret extraction. Upgrade not applied till we request the secret. This rule only applies to secrets stored with FacebookConseal. */
+  /** Upgrade secret to the best available storage as soon as it is available and user request secret extraction. Upgrade not applied till we request the secret. */
   AUTOMATIC_UPGRADE = 'automaticUpgradeToMoreSecuredStorage',
 }

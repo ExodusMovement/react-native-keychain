@@ -16,7 +16,6 @@ import com.facebook.react.module.annotations.ReactModule
 import com.oblador.keychain.cipherStorage.CipherStorage
 import com.oblador.keychain.cipherStorage.CipherStorage.DecryptionResult
 import com.oblador.keychain.cipherStorage.CipherStorageBase
-import com.oblador.keychain.cipherStorage.CipherStorageFacebookConceal
 import com.oblador.keychain.cipherStorage.CipherStorageKeystoreAesCbc
 import com.oblador.keychain.cipherStorage.CipherStorageKeystoreAesGcm
 import com.oblador.keychain.cipherStorage.CipherStorageKeystoreRsaEcb
@@ -103,12 +102,9 @@ class KeychainModule(reactContext: ReactApplicationContext) :
   }
 
   /** Supported ciphers. */
-  @StringDef(KnownCiphers.FB, KnownCiphers.AES_CBC, KnownCiphers.AES_GCM, KnownCiphers.RSA)
+  @StringDef(KnownCiphers.AES_CBC, KnownCiphers.AES_GCM, KnownCiphers.RSA)
   annotation class KnownCiphers {
     companion object {
-      /** Facebook conceal compatibility lib in use. */
-      const val FB = "FacebookConceal"
-
       /** AES CBC encryption. */
       const val AES_CBC = "KeystoreAESCBC"
 
@@ -151,7 +147,6 @@ class KeychainModule(reactContext: ReactApplicationContext) :
   /** Default constructor. */
   init {
     prefsStorage = DataStorePrefsStorage(reactContext, coroutineScope)
-    addCipherStorageToMap(CipherStorageFacebookConceal(reactContext))
     addCipherStorageToMap(CipherStorageKeystoreAesCbc(reactContext))
     addCipherStorageToMap(CipherStorageKeystoreAesGcm(reactContext, false))
     addCipherStorageToMap(CipherStorageKeystoreAesGcm(reactContext, true))
@@ -289,17 +284,7 @@ class KeychainModule(reactContext: ReactApplicationContext) :
           val promptInfo = getPromptInfo(options)
           var cipher: CipherStorage? = null
 
-          // Only check for upgradable ciphers for FacebookConseal as that
-          // is the only cipher that can be upgraded
-          cipher =
-            if (rules == Rules.AUTOMATIC_UPGRADE && storageName == KnownCiphers.FB) {
-              // get the best storage
-              val accessControl = getAccessControlOrDefault(options)
-              val useBiometry = getUseBiometry(accessControl)
-              getCipherStorageForCurrentAPILevel(useBiometry)
-            } else {
-              getCipherStorageByName(storageName)
-            }
+          cipher = getCipherStorageByName(storageName)
           val decryptionResult = decryptCredentials(alias, cipher!!, resultSet, rules, promptInfo)
           val credentials = Arguments.createMap()
           credentials.putString(Maps.SERVICE, alias)

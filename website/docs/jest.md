@@ -40,7 +40,6 @@ const keychainMock = {
     BIOMETRICS: 'MOCK_AuthenticationWithBiometrics',
   },
   STORAGE_TYPE: {
-    FB: 'MOCK_FacebookConceal',
     AES: 'MOCK_KeystoreAESCBC',
     RSA: 'MOCK_KeystoreRSAECB',
     KC: 'MOCK_keychain',

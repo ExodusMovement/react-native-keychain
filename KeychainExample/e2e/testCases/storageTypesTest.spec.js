@@ -29,7 +29,6 @@ describe(':android:Storage Types', () => {
         await matchLoadInfo(
           'testUsernameFB',
           'testPasswordFB',
-          'FacebookConceal',
           type === 'internetCredentials' ? 'https://example.com' : undefined
         );
         await element(by.text('Automatic upgrade')).tap();
