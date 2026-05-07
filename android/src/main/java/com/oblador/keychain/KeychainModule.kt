@@ -148,8 +148,8 @@ class KeychainModule(reactContext: ReactApplicationContext) :
   init {
     prefsStorage = DataStorePrefsStorage(reactContext, coroutineScope)
     addCipherStorageToMap(CipherStorageKeystoreAesCbc(reactContext))
-    addCipherStorageToMap(CipherStorageKeystoreAesGcm(reactContext, false))
-    addCipherStorageToMap(CipherStorageKeystoreAesGcm(reactContext, true))
+    // addCipherStorageToMap(CipherStorageKeystoreAesGcm(reactContext, false))
+    // addCipherStorageToMap(CipherStorageKeystoreAesGcm(reactContext, true))
 
     // we have a references to newer api that will fail load of app classes in old androids OS
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
