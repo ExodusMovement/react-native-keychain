@@ -317,8 +317,6 @@ export function setSharedWebCredentials(
 /**
  * Checks if the current device supports the specified authentication policy.
  *
- * @platform iOS
- *
  * @param {AuthenticationTypeOption} [options] - A keychain options object.
  *
  * @returns {Promise<boolean>} Resolves to `true` when supported, otherwise `false`.
@@ -332,9 +330,6 @@ export function setSharedWebCredentials(
 export function canImplyAuthentication(
   options?: AuthenticationTypeOption
 ): Promise<boolean> {
-  if (!RNKeychainManager.canCheckAuthentication) {
-    return Promise.resolve(false);
-  }
   return RNKeychainManager.canCheckAuthentication(options);
 }
 

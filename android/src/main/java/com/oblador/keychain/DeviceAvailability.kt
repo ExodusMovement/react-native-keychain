@@ -31,6 +31,13 @@ object DeviceAvailability {
     return context.packageManager.hasSystemFeature(PackageManager.FEATURE_IRIS)
   }
 
+  fun isDeviceSecure(context: Context): Boolean {
+    val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+        keyguardManager != null &&
+        keyguardManager.isDeviceSecure
+  }
+
   /** Check is permissions granted for biometric things. */
   @JvmStatic
   fun isPermissionsGranted(context: Context): Boolean {

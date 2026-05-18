@@ -449,6 +449,25 @@ class KeychainModule(reactContext: ReactApplicationContext) :
     promise.resolve(getSecurityLevel(useBiometry).name)
   }
 
+  @ReactMethod
+  fun canCheckAuthentication(options: ReadableMap?, promise: Promise) {
+    try {
+      val authenticationType =
+        if (options != null && options.hasKey(Maps.AUTH_TYPE)) options.getString(Maps.AUTH_TYPE)
+        else null
+      val biometricsOnly = AUTHENTICATION_TYPE_BIOMETRICS == authenticationType
+
+      if (biometricsOnly) {
+        promise.resolve(isFingerprintAuthAvailable)
+      } else {
+        promise.resolve(DeviceAvailability.isDeviceSecure(reactApplicationContext))
+      }
+    } catch (e: Exception) {
+      Log.e(KEYCHAIN_MODULE, e.message, e)
+      promise.resolve(false)
+    }
+  }
+
   private fun addCipherStorageToMap(cipherStorage: CipherStorage) {
     cipherStorageMap[cipherStorage.getCipherStorageName()] = cipherStorage
   }
@@ -677,6 +696,7 @@ class KeychainModule(reactContext: ReactApplicationContext) :
     const val FINGERPRINT_SUPPORTED_NAME = "Fingerprint"
     const val FACE_SUPPORTED_NAME = "Face"
     const val IRIS_SUPPORTED_NAME = "Iris"
+    const val AUTHENTICATION_TYPE_BIOMETRICS = "AuthenticationWithBiometrics"
     const val EMPTY_STRING = ""
     const val WARMING_UP_ALIAS = "warmingUp"
     private val LOG_TAG = KeychainModule::class.java.simpleName
